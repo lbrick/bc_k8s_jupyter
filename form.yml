@@ -1,8 +1,5 @@
 ---
-cluster:
-  - "kubernetes"
-  - "kubernetes-test"
-  - "kubernetes-dev"
+cluster: "my-k8s-cluster"
 
 form:
   - account

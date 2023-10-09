@@ -4,7 +4,7 @@
 
    configmap_filename = "ondemand_config.py"
    configmap_data = "c.NotebookApp.port = 8080"
-   utility_img = "docker-registry.osc.edu/ondemand/ood-k8s-utils:v1.0.0"
+   utility_img = "kandnesi/ood-k8s-utils:v1.0.1"
 
    user = OodSupport::User.new
 %>
@@ -15,7 +15,7 @@ script:
   native:
     container:
       name: "jupyter"
-      image: "docker-registry.osc.edu/ondemand/scipy-notebook:python-3.9.2"
+      image: "jupyter/scipy-notebook:python-3.9.2"
       command: "/usr/local/bin/start.sh /opt/conda/bin/jupyter notebook --config=/ood/ondemand_config.py"
       working_dir: "<%= Etc.getpwnam(ENV['USER']).dir %>"
       restart_policy: 'OnFailure'
@@ -27,22 +27,22 @@ script:
       port: "8080"
       cpu: "<%= cpu %>"
       memory: "<%= memory %>Gi"
+    mounts:
+      - type: nfs
+        name: home
+        host: 10.1.0.140
+        path: /srv/homes/<%= user.name %>
+        destination_path: <%= user.home %>
     configmap:
       files:
         - filename: "<%= configmap_filename %>"
           data: |
-            c.NotebookApp.port = 8080
-            c.NotebookApp.ip = '0.0.0.0'
-            c.NotebookApp.disable_check_xsrf = True
-            c.NotebookApp.allow_origin = '*'
-            c.Application.log_level = 'DEBUG'
+          c.NotebookApp.port = 8080
+          c.NotebookApp.ip = '0.0.0.0'
+          c.NotebookApp.disable_check_xsrf = True
+          c.NotebookApp.allow_origin = '*'
+          c.Application.log_level = 'DEBUG'
           mount_path: '/ood'
-    mounts:
-      - type: host
-        name: home
-        host_type: Directory
-        path: <%= user.home %>
-        destination_path: <%= user.home %>
     init_containers:
     - name: "init-secret"
       image: "<%= utility_img %>"
